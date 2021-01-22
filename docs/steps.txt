@@ -1,0 +1,8 @@
+https://laravel.com/docs/8.x/installation
+composer create-project laravel/laravel fash-app
+
+https://laravel.com/docs/7.x/frontend
+composer require laravel/ui
+php artisan ui vue
+
+npm install, run dev
