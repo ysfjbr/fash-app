@@ -22,7 +22,7 @@ Vue.component('navbar', require('./components/Navbar.vue').default);    // Main 
  * Pages to routes
  */
 import Home from './Pages/HomePage.vue'
-import Movie from './Pages/MoviePage.vue'
+import Show from './Pages/ShowPage.vue'
 
 
 /**
@@ -37,9 +37,9 @@ const router = new VueRouter({
             component: Home
         },
         {
-            path: '/movie',
-            name: 'movie',
-            component: Movie,
+            path: '/show',
+            name: 'show',
+            component: Show,
             meta:{
                 title:"- Login"
             }
