@@ -1878,6 +1878,19 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   components: {
@@ -1901,6 +1914,7 @@ __webpack_require__.r(__webpack_exports__);
       // showing page numbrt
       showedAmount: 25,
       amounts: [10, 25, 50],
+      isListView: false,
       polling: null
     };
   },
@@ -38436,7 +38450,7 @@ var render = function() {
                         staticClass: "form-check-input",
                         attrs: {
                           type: "radio",
-                          name: "inlineRadioOptions",
+                          name: "inlineRadioItemsAmount",
                           id: "inlineRadio" + amount
                         },
                         domProps: {
@@ -38463,6 +38477,98 @@ var render = function() {
                 })
               ],
               2
+            ),
+            _vm._v(" "),
+            _c(
+              "div",
+              {
+                staticClass: "btn-group m-3",
+                attrs: { role: "group", "aria-label": "First group" }
+              },
+              [
+                _vm._v("\n                  View:\n                  "),
+                _c(
+                  "div",
+                  { staticClass: "form-check form-check-inline ml-3" },
+                  [
+                    _c("input", {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.isListView,
+                          expression: "isListView"
+                        }
+                      ],
+                      staticClass: "form-check-input",
+                      attrs: {
+                        type: "radio",
+                        name: "inlineRadioItemsView",
+                        id: "inlineRadioGrid"
+                      },
+                      domProps: {
+                        value: false,
+                        checked: _vm._q(_vm.isListView, false)
+                      },
+                      on: {
+                        change: function($event) {
+                          _vm.isListView = false
+                        }
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c(
+                      "label",
+                      {
+                        staticClass: "form-check-label",
+                        attrs: { for: "inlineRadioGrid" }
+                      },
+                      [_vm._v("Grid")]
+                    )
+                  ]
+                ),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "form-check form-check-inline ml-3" },
+                  [
+                    _c("input", {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.isListView,
+                          expression: "isListView"
+                        }
+                      ],
+                      staticClass: "form-check-input",
+                      attrs: {
+                        type: "radio",
+                        name: "inlineRadioItemsView",
+                        id: "inlineRadioList"
+                      },
+                      domProps: {
+                        value: true,
+                        checked: _vm._q(_vm.isListView, true)
+                      },
+                      on: {
+                        change: function($event) {
+                          _vm.isListView = true
+                        }
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c(
+                      "label",
+                      {
+                        staticClass: "form-check-label",
+                        attrs: { for: "inlineRadioList" }
+                      },
+                      [_vm._v("List")]
+                    )
+                  ]
+                )
+              ]
             )
           ]),
           _vm._v(" "),

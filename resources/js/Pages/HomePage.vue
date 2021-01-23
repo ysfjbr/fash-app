@@ -12,8 +12,21 @@
                 <div class="btn-group m-3" role="group" aria-label="First group">
                     Results amount:
                     <div class="form-check form-check-inline ml-3" v-for="amount in amounts" :key="amount">
-                        <input class="form-check-input" type="radio" name="inlineRadioOptions" :id="'inlineRadio'+amount" :value="amount" v-model="showedAmount"  >
+                        <input class="form-check-input" type="radio" name="inlineRadioItemsAmount" :id="'inlineRadio'+amount" :value="amount" v-model="showedAmount"  >
                         <label class="form-check-label" :for="'inlineRadio'+amount">{{ amount }}</label>
+                    </div>
+                </div>
+
+                <div class="btn-group m-3" role="group" aria-label="First group">
+                    View:
+                    <div class="form-check form-check-inline ml-3">
+                        <input class="form-check-input" type="radio" name="inlineRadioItemsView" id="inlineRadioGrid" :value="false" v-model="isListView"  >
+                        <label class="form-check-label" for="inlineRadioGrid">Grid</label>
+                    </div>
+
+                    <div class="form-check form-check-inline ml-3">
+                        <input class="form-check-input" type="radio" name="inlineRadioItemsView" id="inlineRadioList" :value="true" v-model="isListView"  >
+                        <label class="form-check-label" for="inlineRadioList">List</label>
                     </div>
                 </div>
             </div>
@@ -55,6 +68,8 @@ components: {
 
             showedAmount: 25,
             amounts: [10 , 25, 50],
+
+            isListView: false,
 
             polling: null
             
