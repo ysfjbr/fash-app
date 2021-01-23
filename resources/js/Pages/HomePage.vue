@@ -1,27 +1,11 @@
 <template>
   <div class="mt-4 container">
-        <div>
-            <input class="form-control mr-sm-2" type="search" v-model="searchText" placeholder="Search" aria-label="Search" @keyup="submit">
-        </div>
-
-        <div v-if="error">
-            <div class="alert alert-danger text-center mt-4"  role="alert">
-                {{error}}
+      <div class="row">
+            <div class="col-md-9">
+                <input class="form-control mr-sm-2" type="search" v-model="searchText" placeholder="Search" aria-label="Search" @keyup="submit" @change="submit">
             </div>
-        </div>
 
-        <div v-if="isSearching && !error">
-            <search-results :isloading="isLoading" :results="searchResult" :islistview="isListView"/>
-        </div>
-        <div v-else>
-            <div>
-                <div class="btn-group m-3" role="group" aria-label="First group">
-                    Results amount:
-                    <div class="form-check form-check-inline ml-3" v-for="amount in amounts" :key="amount">
-                        <input class="form-check-input" type="radio" name="inlineRadioItemsAmount" :id="'inlineRadio'+amount" :value="amount" v-model="showedAmount"  >
-                        <label class="form-check-label" :for="'inlineRadio'+amount">{{ amount }}</label>
-                    </div>
-                </div>
+            <div class="col-md-3">
 
                 <div class="btn-group m-3" role="group" aria-label="First group">
                     View:
@@ -36,7 +20,17 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div v-if="error">
+            <div class="alert alert-danger text-center mt-4"  role="alert">
+                {{error}}
+            </div>
+        </div>
 
+        <div v-if="isSearching">
+            <search-results :isloading="isLoading" :results="searchResult" :islistview="isListView"/>
+        </div>
+        <div v-else>
             <div ref="showsDiv">
                 <show-items :showslist="showsList" :islistview="isListView" />
 
@@ -68,14 +62,8 @@ components: {
             searchText:"",
             searchResult: [],
 
-            ShowsPages:{},   // to store pages data here (for optimizing)
-            allShows:[],     // Store all shows (Concat of ShowsPages)
             showsList:[],    // list of shows to display
-            currPage: 1,     // Page Number from server
-            currShowingPage: 0,  // showing page numbrt
-
-            showedAmount: 15,
-            amounts: [15 , 30, 60],
+            currPage: 0,     // Current Page Number
 
             isListView: false,
 
@@ -116,25 +104,11 @@ components: {
         },
         search(search){
             this.getData({data:{search}, callback : res => {
-                    this.searchResult = res && res.filter(show => show.score > 10).map(show => show.show)
+                    this.searchResult = res && res.filter(show => show.score > 5).map(show => show.show)  // score to filter result to get only very closed to input
                 }
             })
         },
-        getAllShow(page, callback){
 
-            if(this.ShowsPages[page])
-            {
-                callback(this.ShowsPages[page])
-            }
-            else{
-                //console.log('loading');
-                this.getData({data:{page}, callback : res => {
-                        this.ShowsPages[page] = res
-                        callback(res)
-                    }
-                })
-            }
-        },
         getData(payload)  {
 
             this.isLoading = true
@@ -153,25 +127,10 @@ components: {
         },
         loadMoreShows(){
 
-            const itemsshowing = this.showsList.length    // amount of shows that displayed
-            const itemsloaded = this.allShows.length      // amount of shows that loaded to memory
-
-            // check if necessery to fetch new data from the server
-            if(itemsshowing + this.showedAmount <= itemsloaded)
-            {
-               // if not ==> just append some shows from memory to render
-               this.showsList = this.showsList.concat(this.allShows.slice(itemsshowing,  itemsshowing + this.showedAmount))
-               this.currShowingPage++
-            }else{
-
-                // if yes ==> fetch the data, append to list in memory, and append new shows to render
-
-               this.getAllShow(this.currPage++, res => {
-                   this.allShows = this.allShows.concat(res)
-                   this.showsList = this.showsList.concat(this.allShows.slice(itemsshowing, itemsshowing + this.showedAmount))
-                   this.currShowingPage++
-               })
-            }
+                this.getData({data:{page : this.currPage++ }, callback : res => {
+                        this.showsList = this.showsList.concat(res)
+                    }
+                })
         },
         handleScroll:function(e) {
             /**

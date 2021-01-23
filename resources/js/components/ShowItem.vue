@@ -51,10 +51,15 @@ export default {
     props: ['showdata', 'islistview'],
 
     methods:{
+        /**
+         * return a part of summry maximum of 200 letter
+         */
         summary(string){
-            string = string.replace(/(<([^>]+)>)/gi, ""); // remove Tags
-            if(string.length > SummeryMaxLength) return string.slice(0, SummeryMaxLength-3) + '...'
-            return string
+            if(string){
+                string = string.replace(/(<([^>]+)>)/gi, ""); // remove Tags
+                if(string.length > SummeryMaxLength) return string.slice(0, SummeryMaxLength-3) + '...'
+                return string
+            }
         }
     }
 }

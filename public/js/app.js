@@ -1893,12 +1893,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   components: {
@@ -1910,18 +1904,10 @@ __webpack_require__.r(__webpack_exports__);
       isSearching: false,
       searchText: "",
       searchResult: [],
-      ShowsPages: {},
-      // to store pages data here (for optimizing)
-      allShows: [],
-      // Store all shows (Concat of ShowsPages)
       showsList: [],
       // list of shows to display
-      currPage: 1,
-      // Page Number from server
-      currShowingPage: 0,
-      // showing page numbrt
-      showedAmount: 15,
-      amounts: [15, 30, 60],
+      currPage: 0,
+      // Current Page Number
       isListView: false,
       polling: null,
       error: ""
@@ -1964,34 +1950,15 @@ __webpack_require__.r(__webpack_exports__);
         },
         callback: function callback(res) {
           _this2.searchResult = res && res.filter(function (show) {
-            return show.score > 10;
+            return show.score > 5;
           }).map(function (show) {
             return show.show;
-          });
+          }); // score to filter result to get only very closed to input
         }
       });
     },
-    getAllShow: function getAllShow(page, _callback) {
-      var _this3 = this;
-
-      if (this.ShowsPages[page]) {
-        _callback(this.ShowsPages[page]);
-      } else {
-        //console.log('loading');
-        this.getData({
-          data: {
-            page: page
-          },
-          callback: function callback(res) {
-            _this3.ShowsPages[page] = res;
-
-            _callback(res);
-          }
-        });
-      }
-    },
     getData: function getData(payload) {
-      var _this4 = this;
+      var _this3 = this;
 
       this.isLoading = true;
       var url;
@@ -2002,31 +1969,22 @@ __webpack_require__.r(__webpack_exports__);
       }).then(function (result) {
         return payload.callback(result.data);
       })["catch"](function (error) {
-        return _this4.error = error;
+        return _this3.error = error;
       })["finally"](function () {
-        return _this4.isLoading = false;
+        return _this3.isLoading = false;
       });
     },
     loadMoreShows: function loadMoreShows() {
-      var _this5 = this;
+      var _this4 = this;
 
-      var itemsshowing = this.showsList.length; // amount of shows that displayed
-
-      var itemsloaded = this.allShows.length; // amount of shows that loaded to memory
-      // check if necessery to fetch new data from the server
-
-      if (itemsshowing + this.showedAmount <= itemsloaded) {
-        // if not ==> just append some shows from memory to render
-        this.showsList = this.showsList.concat(this.allShows.slice(itemsshowing, itemsshowing + this.showedAmount));
-        this.currShowingPage++;
-      } else {
-        // if yes ==> fetch the data, append to list in memory, and append new shows to render
-        this.getAllShow(this.currPage++, function (res) {
-          _this5.allShows = _this5.allShows.concat(res);
-          _this5.showsList = _this5.showsList.concat(_this5.allShows.slice(itemsshowing, itemsshowing + _this5.showedAmount));
-          _this5.currShowingPage++;
-        });
-      }
+      this.getData({
+        data: {
+          page: this.currPage++
+        },
+        callback: function callback(res) {
+          _this4.showsList = _this4.showsList.concat(res);
+        }
+      });
     },
     handleScroll: function handleScroll(e) {
       /**
@@ -2215,11 +2173,16 @@ var SummeryMaxLength = 200;
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   props: ['showdata', 'islistview'],
   methods: {
+    /**
+     * return a part of summry maximum of 200 letter
+     */
     summary: function summary(string) {
-      string = string.replace(/(<([^>]+)>)/gi, ""); // remove Tags
+      if (string) {
+        string = string.replace(/(<([^>]+)>)/gi, ""); // remove Tags
 
-      if (string.length > SummeryMaxLength) return string.slice(0, SummeryMaxLength - 3) + '...';
-      return string;
+        if (string.length > SummeryMaxLength) return string.slice(0, SummeryMaxLength - 3) + '...';
+        return string;
+      }
     }
   }
 });
@@ -38804,33 +38767,122 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "mt-4 container" }, [
-    _c("div", [
-      _c("input", {
-        directives: [
-          {
-            name: "model",
-            rawName: "v-model",
-            value: _vm.searchText,
-            expression: "searchText"
-          }
-        ],
-        staticClass: "form-control mr-sm-2",
-        attrs: {
-          type: "search",
-          placeholder: "Search",
-          "aria-label": "Search"
-        },
-        domProps: { value: _vm.searchText },
-        on: {
-          keyup: _vm.submit,
-          input: function($event) {
-            if ($event.target.composing) {
-              return
+    _c("div", { staticClass: "row" }, [
+      _c("div", { staticClass: "col-md-9" }, [
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: _vm.searchText,
+              expression: "searchText"
             }
-            _vm.searchText = $event.target.value
+          ],
+          staticClass: "form-control mr-sm-2",
+          attrs: {
+            type: "search",
+            placeholder: "Search",
+            "aria-label": "Search"
+          },
+          domProps: { value: _vm.searchText },
+          on: {
+            keyup: _vm.submit,
+            change: _vm.submit,
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.searchText = $event.target.value
+            }
           }
-        }
-      })
+        })
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-md-3" }, [
+        _c(
+          "div",
+          {
+            staticClass: "btn-group m-3",
+            attrs: { role: "group", "aria-label": "First group" }
+          },
+          [
+            _vm._v("\n                  View:\n                  "),
+            _c("div", { staticClass: "form-check form-check-inline ml-3" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.isListView,
+                    expression: "isListView"
+                  }
+                ],
+                staticClass: "form-check-input",
+                attrs: {
+                  type: "radio",
+                  name: "inlineRadioItemsView",
+                  id: "inlineRadioGrid"
+                },
+                domProps: {
+                  value: false,
+                  checked: _vm._q(_vm.isListView, false)
+                },
+                on: {
+                  change: function($event) {
+                    _vm.isListView = false
+                  }
+                }
+              }),
+              _vm._v(" "),
+              _c(
+                "label",
+                {
+                  staticClass: "form-check-label",
+                  attrs: { for: "inlineRadioGrid" }
+                },
+                [_vm._v("Grid")]
+              )
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "form-check form-check-inline ml-3" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.isListView,
+                    expression: "isListView"
+                  }
+                ],
+                staticClass: "form-check-input",
+                attrs: {
+                  type: "radio",
+                  name: "inlineRadioItemsView",
+                  id: "inlineRadioList"
+                },
+                domProps: {
+                  value: true,
+                  checked: _vm._q(_vm.isListView, true)
+                },
+                on: {
+                  change: function($event) {
+                    _vm.isListView = true
+                  }
+                }
+              }),
+              _vm._v(" "),
+              _c(
+                "label",
+                {
+                  staticClass: "form-check-label",
+                  attrs: { for: "inlineRadioList" }
+                },
+                [_vm._v("List")]
+              )
+            ])
+          ]
+        )
+      ])
     ]),
     _vm._v(" "),
     _vm.error
@@ -38846,7 +38898,7 @@ var render = function() {
         ])
       : _vm._e(),
     _vm._v(" "),
-    _vm.isSearching && !_vm.error
+    _vm.isSearching
       ? _c(
           "div",
           [
@@ -38861,159 +38913,6 @@ var render = function() {
           1
         )
       : _c("div", [
-          _c("div", [
-            _c(
-              "div",
-              {
-                staticClass: "btn-group m-3",
-                attrs: { role: "group", "aria-label": "First group" }
-              },
-              [
-                _vm._v(
-                  "\n                  Results amount:\n                  "
-                ),
-                _vm._l(_vm.amounts, function(amount) {
-                  return _c(
-                    "div",
-                    {
-                      key: amount,
-                      staticClass: "form-check form-check-inline ml-3"
-                    },
-                    [
-                      _c("input", {
-                        directives: [
-                          {
-                            name: "model",
-                            rawName: "v-model",
-                            value: _vm.showedAmount,
-                            expression: "showedAmount"
-                          }
-                        ],
-                        staticClass: "form-check-input",
-                        attrs: {
-                          type: "radio",
-                          name: "inlineRadioItemsAmount",
-                          id: "inlineRadio" + amount
-                        },
-                        domProps: {
-                          value: amount,
-                          checked: _vm._q(_vm.showedAmount, amount)
-                        },
-                        on: {
-                          change: function($event) {
-                            _vm.showedAmount = amount
-                          }
-                        }
-                      }),
-                      _vm._v(" "),
-                      _c(
-                        "label",
-                        {
-                          staticClass: "form-check-label",
-                          attrs: { for: "inlineRadio" + amount }
-                        },
-                        [_vm._v(_vm._s(amount))]
-                      )
-                    ]
-                  )
-                })
-              ],
-              2
-            ),
-            _vm._v(" "),
-            _c(
-              "div",
-              {
-                staticClass: "btn-group m-3",
-                attrs: { role: "group", "aria-label": "First group" }
-              },
-              [
-                _vm._v("\n                  View:\n                  "),
-                _c(
-                  "div",
-                  { staticClass: "form-check form-check-inline ml-3" },
-                  [
-                    _c("input", {
-                      directives: [
-                        {
-                          name: "model",
-                          rawName: "v-model",
-                          value: _vm.isListView,
-                          expression: "isListView"
-                        }
-                      ],
-                      staticClass: "form-check-input",
-                      attrs: {
-                        type: "radio",
-                        name: "inlineRadioItemsView",
-                        id: "inlineRadioGrid"
-                      },
-                      domProps: {
-                        value: false,
-                        checked: _vm._q(_vm.isListView, false)
-                      },
-                      on: {
-                        change: function($event) {
-                          _vm.isListView = false
-                        }
-                      }
-                    }),
-                    _vm._v(" "),
-                    _c(
-                      "label",
-                      {
-                        staticClass: "form-check-label",
-                        attrs: { for: "inlineRadioGrid" }
-                      },
-                      [_vm._v("Grid")]
-                    )
-                  ]
-                ),
-                _vm._v(" "),
-                _c(
-                  "div",
-                  { staticClass: "form-check form-check-inline ml-3" },
-                  [
-                    _c("input", {
-                      directives: [
-                        {
-                          name: "model",
-                          rawName: "v-model",
-                          value: _vm.isListView,
-                          expression: "isListView"
-                        }
-                      ],
-                      staticClass: "form-check-input",
-                      attrs: {
-                        type: "radio",
-                        name: "inlineRadioItemsView",
-                        id: "inlineRadioList"
-                      },
-                      domProps: {
-                        value: true,
-                        checked: _vm._q(_vm.isListView, true)
-                      },
-                      on: {
-                        change: function($event) {
-                          _vm.isListView = true
-                        }
-                      }
-                    }),
-                    _vm._v(" "),
-                    _c(
-                      "label",
-                      {
-                        staticClass: "form-check-label",
-                        attrs: { for: "inlineRadioList" }
-                      },
-                      [_vm._v("List")]
-                    )
-                  ]
-                )
-              ]
-            )
-          ]),
-          _vm._v(" "),
           _c(
             "div",
             { ref: "showsDiv" },
