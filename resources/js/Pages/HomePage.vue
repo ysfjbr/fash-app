@@ -1,15 +1,34 @@
 <template>
   <div class="mt-4 container">
-      <div >
-          <input class="form-control mr-sm-2" type="search" v-model="search_text" placeholder="Search" aria-label="Search" @keyup="submit">
-      </div>
-      <div v-if="isLoading">
-          loading ...
-      </div>
+        <div>
+            <input class="form-control mr-sm-2" type="search" v-model="searchText" placeholder="Search" aria-label="Search" @keyup="submit">
+        </div>
 
-      <div v-else>
-            <router-link class="nav-link" :to="`/show/${ show.id }`" v-for="show in showsToShow" :key="show.id">{{ show.name }}</router-link>
-      </div>
+        <div v-if="isSearching">
+            <router-link class="nav-link" :to="`/show/${ show.id }`" v-for="show in searchResult" :key="show.id">
+                {{ show.name }}
+            </router-link>
+        </div>
+        <div v-else>
+            <div>
+                <div class="btn-group m-3" role="group" aria-label="First group">
+                    Results amount:
+                    <div class="form-check form-check-inline ml-3" v-for="amount in amounts" :key="amount">
+                        <input class="form-check-input" type="radio" name="inlineRadioOptions" :id="'inlineRadio'+amount" :value="amount" v-model="showedAmount"  >
+                        <label class="form-check-label" :for="'inlineRadio'+amount">{{ amount }}</label>
+                    </div>
+                </div>
+            </div>
+
+            <div ref="showsDiv">
+                    <router-link class="nav-link" :to="`/show/${ show.id }`" v-for="show in showsList" :key="show.id">
+                    {{ show.name }}
+                    </router-link>
+            </div>
+            <div v-if="isLoading">
+                loading ...
+            </div>
+        </div>
   </div>
 </template>
 
@@ -18,41 +37,73 @@ export default {
     data () {
         return {
             isLoading: false,
-            search_text:"",
-            allShows:{},
-            showsToShow:[],
-            showedAmount: 1,
-            amounts: [10 , 25, 50]
+            isSearching: false,
+
+            searchText:"",
+            searchResult: [],
+
+            ShowsPages:{},   // to store pages data here (for optimizing)
+            allShows:[],     // Store all shows (Concat of ShowsPages)
+            showsList:[],    // list of shows to display
+            currPage: 1,     // Page Number from server
+            currShowingPage: 0,  // showing page numbrt
+
+            showedAmount: 25,
+            amounts: [10 , 25, 50],
+
+            polling: null
+            
+
         }
     },
     methods: {
         submit(e){
-            if(this.search_text.length > 3)
-                this.search(this.search_text)
-            else if(this.search_text.length === 0) this.getAllShow(1)
+            // when user typing 
+            
+            //reset polling = reset time after stop typing...
+            clearInterval(this.polling)
+
+
+            if(this.searchText.length > 0)
+            {
+                /**
+                when user stopped typing for 2 seconds start search (for Optimizng API fetching)
+                 */
+                this.polling = setInterval(() => {
+			        this.search(this.searchText)
+                    clearInterval(this.polling)
+		        }, 2000)
+
+                this.isSearching = true  // to show search results
+            }
+
+            // if search input is empty, hide search results
+            else {
+                this.searchResult = []
+                this.isSearching = false
+            }
         },
         search(search){
             this.getData({data:{search}, callback : res => {
-                this.showsToShow = res.filter(show => show.score > 8).map(show => show.show)
-            }
+                    this.searchResult = res.filter(show => show.score > 10).map(show => show.show)
+                }
             })
         },
+        getAllShow(page, callback){
 
-        getAllShow(page){
-
-            if(this.allShows[page])
+            if(this.ShowsPages[page])
             {
-                console.log('is loaded');
+                callback(this.ShowsPages[page])
             }
             else{
                 console.log('loading');
                 this.getData({data:{page}, callback : res => {
-                        this.allShows[page] = res
+                        this.ShowsPages[page] = res
+                        callback(res)
                     }
                 })
             }
         },
-
         getData(payload)  {
 
             this.isLoading = true
@@ -68,10 +119,44 @@ export default {
             .then(res=> payload.callback(res.data))
             .catch(err=> console.log(err))
             .finally(() => this.isLoading = false);
-        }
+        },
+        loadMoreShows(){
+
+            const itemsshowing = this.showsList.length    // amount of shows that displayed
+            const itemsloaded = this.allShows.length      // amount of shows that loaded to memory
+            
+            // check if necessery to fetch new data from the server 
+            if(itemsshowing + this.showedAmount <= itemsloaded)
+            {
+               // if not ==> just append some shows from memory to render 
+               this.showsList = this.showsList.concat(this.allShows.slice(itemsshowing,  itemsshowing + this.showedAmount))
+               this.currShowingPage++
+            }else{
+
+                // if yes ==> fetch the data, append to list in memory, and append new shows to render
+
+               this.getAllShow(this.currPage++, res => {
+                   this.allShows = this.allShows.concat(res)
+                   this.showsList = this.showsList.concat(this.allShows.slice(itemsshowing, itemsshowing + this.showedAmount))
+                   this.currShowingPage++
+               })
+            }
+        },
+        handleScroll:function(e) {
+/**
+check if user scroll to end of page
+ */
+            if(window.innerHeight +1 > this.$refs.showsDiv.getBoundingClientRect().bottom) this.loadMoreShows();
+          },
     },
     mounted () {
-         //this.getAllShow(1)
+        this.loadMoreShows()
+    },
+    created:function() {
+        window.addEventListener('scroll', this.handleScroll);
+    },
+    destroyed() {
+        window.removeEventListener('scroll', this.handleScroll);
     }
 }
 </script>

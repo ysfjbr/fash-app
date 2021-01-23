@@ -1860,42 +1860,92 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   data: function data() {
     return {
       isLoading: false,
-      search_text: "",
-      allShows: {},
-      showsToShow: [],
-      showedAmount: 1,
-      amounts: [10, 25, 50]
+      isSearching: false,
+      searchText: "",
+      searchResult: [],
+      ShowsPages: {},
+      // to store pages data here (for optimizing)
+      allShows: [],
+      // Store all shows (Concat of ShowsPages)
+      showsList: [],
+      // list of shows to display
+      currPage: 1,
+      // Page Number from server
+      currShowingPage: 0,
+      // showing page numbrt
+      showedAmount: 25,
+      amounts: [10, 25, 50],
+      polling: null
     };
   },
   methods: {
     submit: function submit(e) {
-      if (this.search_text.length > 3) this.search(this.search_text);else if (this.search_text.length === 0) this.getAllShow(1);
+      var _this = this;
+
+      // when user typing 
+      //reset polling = reset time after stop typing...
+      clearInterval(this.polling);
+
+      if (this.searchText.length > 0) {
+        /**
+        when user stopped typing for 2 seconds start search (for Optimizng API fetching)
+         */
+        this.polling = setInterval(function () {
+          _this.search(_this.searchText);
+
+          clearInterval(_this.polling);
+        }, 2000);
+        this.isSearching = true; // to show search results
+      } // if search input is empty, hide search results
+      else {
+          this.searchResult = [];
+          this.isSearching = false;
+        }
     },
     search: function search(_search) {
-      var _this = this;
+      var _this2 = this;
 
       this.getData({
         data: {
           search: _search
         },
         callback: function callback(res) {
-          _this.showsToShow = res.filter(function (show) {
-            return show.score > 8;
+          _this2.searchResult = res.filter(function (show) {
+            return show.score > 10;
           }).map(function (show) {
             return show.show;
           });
         }
       });
     },
-    getAllShow: function getAllShow(page) {
-      var _this2 = this;
+    getAllShow: function getAllShow(page, _callback) {
+      var _this3 = this;
 
-      if (this.allShows[page]) {
-        console.log('is loaded');
+      if (this.ShowsPages[page]) {
+        _callback(this.ShowsPages[page]);
       } else {
         console.log('loading');
         this.getData({
@@ -1903,13 +1953,15 @@ __webpack_require__.r(__webpack_exports__);
             page: page
           },
           callback: function callback(res) {
-            _this2.allShows[page] = res;
+            _this3.ShowsPages[page] = res;
+
+            _callback(res);
           }
         });
       }
     },
     getData: function getData(payload) {
-      var _this3 = this;
+      var _this4 = this;
 
       this.isLoading = true;
       var url;
@@ -1922,11 +1974,45 @@ __webpack_require__.r(__webpack_exports__);
       })["catch"](function (err) {
         return console.log(err);
       })["finally"](function () {
-        return _this3.isLoading = false;
+        return _this4.isLoading = false;
       });
+    },
+    loadMoreShows: function loadMoreShows() {
+      var _this5 = this;
+
+      var itemsshowing = this.showsList.length; // amount of shows that displayed
+
+      var itemsloaded = this.allShows.length; // amount of shows that loaded to memory
+      // check if necessery to fetch new data from the server 
+
+      if (itemsshowing + this.showedAmount <= itemsloaded) {
+        // if not ==> just append some shows from memory to render 
+        this.showsList = this.showsList.concat(this.allShows.slice(itemsshowing, itemsshowing + this.showedAmount));
+        this.currShowingPage++;
+      } else {
+        // if yes ==> fetch the data, append to list in memory, and append new shows to render
+        this.getAllShow(this.currPage++, function (res) {
+          _this5.allShows = _this5.allShows.concat(res);
+          _this5.showsList = _this5.showsList.concat(_this5.allShows.slice(itemsshowing, itemsshowing + _this5.showedAmount));
+          _this5.currShowingPage++;
+        });
+      }
+    },
+    handleScroll: function handleScroll(e) {
+      /**
+      check if user scroll to end of page
+       */
+      if (window.innerHeight + 1 > this.$refs.showsDiv.getBoundingClientRect().bottom) this.loadMoreShows();
     }
   },
-  mounted: function mounted() {//this.getAllShow(1)
+  mounted: function mounted() {
+    this.loadMoreShows();
+  },
+  created: function created() {
+    window.addEventListener('scroll', this.handleScroll);
+  },
+  destroyed: function destroyed() {
+    window.removeEventListener('scroll', this.handleScroll);
   }
 });
 
@@ -38178,8 +38264,8 @@ var render = function() {
           {
             name: "model",
             rawName: "v-model",
-            value: _vm.search_text,
-            expression: "search_text"
+            value: _vm.searchText,
+            expression: "searchText"
           }
         ],
         staticClass: "form-control mr-sm-2",
@@ -38188,24 +38274,23 @@ var render = function() {
           placeholder: "Search",
           "aria-label": "Search"
         },
-        domProps: { value: _vm.search_text },
+        domProps: { value: _vm.searchText },
         on: {
           keyup: _vm.submit,
           input: function($event) {
             if ($event.target.composing) {
               return
             }
-            _vm.search_text = $event.target.value
+            _vm.searchText = $event.target.value
           }
         }
       })
     ]),
     _vm._v(" "),
-    _vm.isLoading
-      ? _c("div", [_vm._v("\n        loading ...\n    ")])
-      : _c(
+    _vm.isSearching
+      ? _c(
           "div",
-          _vm._l(_vm.showsToShow, function(show) {
+          _vm._l(_vm.searchResult, function(show) {
             return _c(
               "router-link",
               {
@@ -38213,11 +38298,100 @@ var render = function() {
                 staticClass: "nav-link",
                 attrs: { to: "/show/" + show.id }
               },
-              [_vm._v(_vm._s(show.name))]
+              [_vm._v("\n              " + _vm._s(show.name) + "\n          ")]
             )
           }),
           1
         )
+      : _c("div", [
+          _c("div", [
+            _c(
+              "div",
+              {
+                staticClass: "btn-group m-3",
+                attrs: { role: "group", "aria-label": "First group" }
+              },
+              [
+                _vm._v(
+                  "\n                  Results amount:\n                  "
+                ),
+                _vm._l(_vm.amounts, function(amount) {
+                  return _c(
+                    "div",
+                    {
+                      key: amount,
+                      staticClass: "form-check form-check-inline ml-3"
+                    },
+                    [
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: _vm.showedAmount,
+                            expression: "showedAmount"
+                          }
+                        ],
+                        staticClass: "form-check-input",
+                        attrs: {
+                          type: "radio",
+                          name: "inlineRadioOptions",
+                          id: "inlineRadio" + amount
+                        },
+                        domProps: {
+                          value: amount,
+                          checked: _vm._q(_vm.showedAmount, amount)
+                        },
+                        on: {
+                          change: function($event) {
+                            _vm.showedAmount = amount
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c(
+                        "label",
+                        {
+                          staticClass: "form-check-label",
+                          attrs: { for: "inlineRadio" + amount }
+                        },
+                        [_vm._v(_vm._s(amount))]
+                      )
+                    ]
+                  )
+                })
+              ],
+              2
+            )
+          ]),
+          _vm._v(" "),
+          _c(
+            "div",
+            { ref: "showsDiv" },
+            _vm._l(_vm.showsList, function(show) {
+              return _c(
+                "router-link",
+                {
+                  key: show.id,
+                  staticClass: "nav-link",
+                  attrs: { to: "/show/" + show.id }
+                },
+                [
+                  _vm._v(
+                    "\n                  " +
+                      _vm._s(show.name) +
+                      "\n                  "
+                  )
+                ]
+              )
+            }),
+            1
+          ),
+          _vm._v(" "),
+          _vm.isLoading
+            ? _c("div", [_vm._v("\n              loading ...\n          ")])
+            : _vm._e()
+        ])
   ])
 }
 var staticRenderFns = []
