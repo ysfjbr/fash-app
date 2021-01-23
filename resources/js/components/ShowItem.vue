@@ -3,20 +3,29 @@
 <tr class="col-sm-12" v-if="islistview">
     <td>
         <router-link class="nav-link" :to="`/show/${ showdata.id }`">
-            <img :src="showdata.image.medium" :alt="showdata.name" width="50" height="auto">
+            <img :src="showdata.image.medium" :alt="showdata.name" width="60" height="auto">
         </router-link>
     </td>
     <td>
         <router-link class="nav-link" :to="`/show/${ showdata.id }`">
             {{ showdata.name }}
         </router-link>
+        <p class="d-none d-lg-block"> {{ summary(showdata.summary) }} </p>
      </td>
-     <td>
+
+     <td class="d-none d-lg-block">
+         {{ showdata.premiered }}
      </td>
+
      <td>
+        {{ showdata.genres[0] }}
+     </td>
+
+     <td class="d-none d-lg-block">
+        {{ showdata.language }}
      </td>
 </tr>
-<div class="col-sm-4" v-else>
+<div class="col-lg-4" v-else>
 
         <router-link class="nav-link" :to="`/show/${ showdata.id }`">
         <div class="card card-custom bg-white border-white border-0">

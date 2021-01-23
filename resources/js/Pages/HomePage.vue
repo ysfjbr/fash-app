@@ -4,8 +4,14 @@
             <input class="form-control mr-sm-2" type="search" v-model="searchText" placeholder="Search" aria-label="Search" @keyup="submit">
         </div>
 
-        <div v-if="isSearching">
-            <search-results :isloading="isLoading" :results="searchResult" />
+        <div v-if="error">
+            <div class="alert alert-danger text-center mt-4"  role="alert">
+                {{error}}
+            </div>
+        </div>
+
+        <div v-if="isSearching && !error">
+            <search-results :isloading="isLoading" :results="searchResult" :islistview="isListView"/>
         </div>
         <div v-else>
             <div>
@@ -32,31 +38,15 @@
             </div>
 
             <div ref="showsDiv">
-                <div class="row" v-if="isListView">
+                <show-items :showslist="showsList" :islistview="isListView" />
 
-                    <table class="table">
-
-                    <thead>
-                    <tr>
-                        <th scope="col"></th>
-                        <th scope="col">Show Title</th>
-                        <th scope="col">Last</th>
-                        <th scope="col">Handle</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <show-item  v-for="show in showsList" :key="show.id" :showdata="show" :islistview="isListView" />
-                        </tbody>
-                    </table>
-                </div>
-                <div class="row" v-else>
-
-                     <show-item  v-for="show in showsList" :key="show.id" :showdata="show" :islistview="isListView" />
+                <div class="text-center" v-if="isLoading">
+                    <div class="spinner-border" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
                 </div>
             </div>
-            <div v-if="isLoading">
-                loading ...
-            </div>
+
         </div>
   </div>
 </template>
@@ -89,7 +79,8 @@ components: {
 
             isListView: false,
 
-            polling: null
+            polling: null,
+            error: ""
         }
     },
     methods: {
@@ -98,32 +89,34 @@ components: {
 
             //reset polling = reset time after stop typing...
             clearInterval(this.polling)
-
+            this.searchResult = []
             //is Loading
             this.isLoading = true
+
+            // clear Error
+            this.error = "";
 
             if(this.searchText.length > 0)
             {
                 /**
-                when user stopped typing for 1 second start search (for Optimizng API fetching)
+                when user stopped typing for 0.5 second start search (for Optimizng API fetching)
                  */
                 this.polling = setInterval(() => {
 			        this.search(this.searchText)
                     clearInterval(this.polling)
-		        }, 1000)
+		        }, 500)
 
                 this.isSearching = true  // to show search results
             }
 
             // if search input is empty, hide search results
             else {
-                this.searchResult = []
                 this.isSearching = false
             }
         },
         search(search){
             this.getData({data:{search}, callback : res => {
-                    this.searchResult = res.filter(show => show.score > 10).map(show => show.show)
+                    this.searchResult = res && res.filter(show => show.score > 10).map(show => show.show)
                 }
             })
         },
@@ -134,7 +127,7 @@ components: {
                 callback(this.ShowsPages[page])
             }
             else{
-                console.log('loading');
+                //console.log('loading');
                 this.getData({data:{page}, callback : res => {
                         this.ShowsPages[page] = res
                         callback(res)
@@ -151,11 +144,11 @@ components: {
             url =`/api/${ payload.clname }/${ payload.objectid }`;
             else
             url =`/api/shows/`;
-            console.log("payload",url);
+            //console.log("payload",url);
 
             axios.get(url,{params: payload.data})
-            .then(res=> payload.callback(res.data))
-            .catch(err=> console.log(err))
+            .then(result=> payload.callback(result.data))
+            .catch(error=> this.error = error)
             .finally(() => this.isLoading = false);
         },
         loadMoreShows(){
@@ -181,10 +174,11 @@ components: {
             }
         },
         handleScroll:function(e) {
-/**
-check if user scroll to end of page
- */
-            if(window.innerHeight +1 > this.$refs.showsDiv.getBoundingClientRect().bottom) this.loadMoreShows();
+            /**
+            check if user scroll to end of page
+            */
+
+            if(this.$refs.showsDiv && window.innerHeight +1 > this.$refs.showsDiv.getBoundingClientRect().bottom) this.loadMoreShows();
           },
     },
     mounted () {
@@ -197,8 +191,7 @@ check if user scroll to end of page
         window.removeEventListener('scroll', this.handleScroll);
     },
     watch: {
-        showedAmount: function (val) {
-            console.log("hi");
+        showedAmount: function (va) {
             this.showsList = []
             this.loadMoreShows()
         }

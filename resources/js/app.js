@@ -9,7 +9,7 @@ require('./bootstrap');
 window.Vue = require('vue').default;
 
 import VueRouter from 'vue-router'
- 
+
 Vue.use(VueRouter)
 
 /**
@@ -17,7 +17,8 @@ Vue.use(VueRouter)
  */
 Vue.component('app', require('./components/App.vue').default);              // Main SPA
 Vue.component('navbar', require('./components/Navbar.vue').default);        // Main Application Navbar
-Vue.component('show-item', require('./components/ShowItem.vue').default);   // TV-Show Item
+Vue.component('show-items', require('./components/ShowsItems.vue').default);   // Group of TV-Show Items
+Vue.component('show-item', require('./components/ShowItem.vue').default);   // One TV-Show Item
 
 /**
  * Pages to routes
