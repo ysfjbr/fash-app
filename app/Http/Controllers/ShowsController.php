@@ -39,7 +39,7 @@ class ShowsController extends Controller
             // for example "&the world# " => "THE+WORLD"
             $cacheKey = 'SHOW.SEARCH.'.$search;
 
-            return $cacheKey;
+            //return $cacheKey;
             
             return cache()->remember($cacheKey, Carbon::now()->addHour(10), function() use($search) {
                 return self::getDataFromTVMaze('search/shows',['q'=> $search]);

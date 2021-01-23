@@ -5,11 +5,9 @@
         </div>
 
         <div v-if="isSearching">
-            <router-link class="nav-link" :to="`/show/${ show.id }`" v-for="show in searchResult" :key="show.id">
-                {{ show.name }}
-            </router-link>
+            <search-results :isloading="isLoading" :results="searchResult" />            
         </div>
-        <div v-else>
+        <div v-else>        
             <div>
                 <div class="btn-group m-3" role="group" aria-label="First group">
                     Results amount:
@@ -33,7 +31,14 @@
 </template>
 
 <script>
+
+import SearchResults from '../components/SearchResults.vue'
+
 export default {
+components: {
+    "search-results": SearchResults
+},
+
     data () {
         return {
             isLoading: false,
@@ -62,17 +67,19 @@ export default {
             
             //reset polling = reset time after stop typing...
             clearInterval(this.polling)
-
+            
+            //is Loading
+            this.isLoading = true
 
             if(this.searchText.length > 0)
             {
                 /**
-                when user stopped typing for 2 seconds start search (for Optimizng API fetching)
+                when user stopped typing for 1 second start search (for Optimizng API fetching)
                  */
                 this.polling = setInterval(() => {
 			        this.search(this.searchText)
                     clearInterval(this.polling)
-		        }, 2000)
+		        }, 1000)
 
                 this.isSearching = true  // to show search results
             }
