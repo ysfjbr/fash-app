@@ -5,9 +5,9 @@
         </div>
 
         <div v-if="isSearching">
-            <search-results :isloading="isLoading" :results="searchResult" />            
+            <search-results :isloading="isLoading" :results="searchResult" />
         </div>
-        <div v-else>        
+        <div v-else>
             <div>
                 <div class="btn-group m-3" role="group" aria-label="First group">
                     Results amount:
@@ -32,7 +32,27 @@
             </div>
 
             <div ref="showsDiv">
-                    <show-item  v-for="show in showsList" :key="show.id" :showdata="show" :islistview="isListView" />
+                <div class="row" v-if="isListView">
+
+                    <table class="table">
+
+                    <thead>
+                    <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Show Title</th>
+                        <th scope="col">Last</th>
+                        <th scope="col">Handle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <show-item  v-for="show in showsList" :key="show.id" :showdata="show" :islistview="isListView" />
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row" v-else>
+
+                     <show-item  v-for="show in showsList" :key="show.id" :showdata="show" :islistview="isListView" />
+                </div>
             </div>
             <div v-if="isLoading">
                 loading ...
@@ -64,23 +84,21 @@ components: {
             currPage: 1,     // Page Number from server
             currShowingPage: 0,  // showing page numbrt
 
-            showedAmount: 25,
-            amounts: [10 , 25, 50],
+            showedAmount: 15,
+            amounts: [15 , 30, 60],
 
             isListView: false,
 
             polling: null
-            
-
         }
     },
     methods: {
         submit(e){
-            // when user typing 
-            
+            // when user typing
+
             //reset polling = reset time after stop typing...
             clearInterval(this.polling)
-            
+
             //is Loading
             this.isLoading = true
 
@@ -144,11 +162,11 @@ components: {
 
             const itemsshowing = this.showsList.length    // amount of shows that displayed
             const itemsloaded = this.allShows.length      // amount of shows that loaded to memory
-            
-            // check if necessery to fetch new data from the server 
+
+            // check if necessery to fetch new data from the server
             if(itemsshowing + this.showedAmount <= itemsloaded)
             {
-               // if not ==> just append some shows from memory to render 
+               // if not ==> just append some shows from memory to render
                this.showsList = this.showsList.concat(this.allShows.slice(itemsshowing,  itemsshowing + this.showedAmount))
                this.currShowingPage++
             }else{
@@ -177,6 +195,13 @@ check if user scroll to end of page
     },
     destroyed() {
         window.removeEventListener('scroll', this.handleScroll);
+    },
+    watch: {
+        showedAmount: function (val) {
+            console.log("hi");
+            this.showsList = []
+            this.loadMoreShows()
+        }
     }
 }
 </script>
