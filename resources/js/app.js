@@ -15,8 +15,9 @@ Vue.use(VueRouter)
 /**
  * Registering of Public Components
  */
-Vue.component('app', require('./components/App.vue').default);          // Main SPA
-Vue.component('navbar', require('./components/Navbar.vue').default);    // Main Application Navbar
+Vue.component('app', require('./components/App.vue').default);              // Main SPA
+Vue.component('navbar', require('./components/Navbar.vue').default);        // Main Application Navbar
+Vue.component('show-item', require('./components/ShowItem.vue').default);   // TV-Show Item
 
 /**
  * Pages to routes

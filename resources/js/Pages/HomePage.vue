@@ -32,9 +32,7 @@
             </div>
 
             <div ref="showsDiv">
-                    <router-link class="nav-link" :to="`/show/${ show.id }`" v-for="show in showsList" :key="show.id">
-                    {{ show.name }}
-                    </router-link>
+                    <show-item  v-for="show in showsList" :key="show.id" :showdata="show" :islistview="isListView" />
             </div>
             <div v-if="isLoading">
                 loading ...
