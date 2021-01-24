@@ -2,11 +2,10 @@
   <div class="mt-4 container">
       <div class="row">
             <div class="col-md-9">
-                <input class="form-control mr-sm-2" type="search" v-model="searchText" placeholder="Search" aria-label="Search" @keyup="submit" @change="submit">
+                <input class="form-control mr-sm-2" type="search" v-model="searchText" placeholder="Search" aria-label="Search" @keyup="submit">
             </div>
 
             <div class="col-md-3">
-
                 <div class="btn-group m-3" role="group" aria-label="First group">
                     View:
                     <div class="form-check form-check-inline ml-3">
@@ -28,10 +27,22 @@
         </div>
 
         <div v-if="isSearching">
+            <div v-if="noResults">
+                <div class="text-center">
+                    There are no results.
+                </div>
+            </div>
             <search-results :isloading="isLoading" :results="searchResult" :islistview="isListView"/>
         </div>
         <div v-else>
             <div ref="showsDiv">
+
+                <div v-if="noResults">
+                    <div class="text-center">
+                        There are no results.
+                    </div>
+                </div>
+
                 <show-items :showslist="showsList" :islistview="isListView" />
 
                 <div class="text-center" v-if="isLoading">
@@ -56,18 +67,18 @@ components: {
 
     data () {
         return {
-            isLoading: false,
-            isSearching: false,
+            isLoading: false,   // true while data is fetching from server
+            isSearching: false, // true when user typing in search input
 
             searchText:"",
             searchResult: [],
 
-            showsList:[],    // list of shows to display
-            currPage: 0,     // Current Page Number
+            showsList:[],       // list of shows to display
+            currPage: 0,        // Current Page Number
 
-            isListView: false,
+            isListView: false,  // view Move List Or Grid
 
-            polling: null,
+            polling: null,      // timer for typing in search input
             error: ""
         }
     },
@@ -109,15 +120,14 @@ components: {
             })
         },
 
+        /**
+         *  fetch Api data from server
+         */
         getData(payload)  {
 
             this.isLoading = true
 
-            let url
-            if(payload.objectid)
-            url =`/api/${ payload.clname }/${ payload.objectid }`;
-            else
-            url =`/api/shows/`;
+            let url =`/api/shows/`;
             //console.log("payload",url);
 
             axios.get(url,{params: payload.data})
@@ -125,6 +135,10 @@ components: {
             .catch(error=> this.error = error)
             .finally(() => this.isLoading = false);
         },
+
+        /**
+         * append more items to show in page
+         */
         loadMoreShows(){
 
                 this.getData({data:{page : this.currPage++ }, callback : res => {
@@ -136,23 +150,25 @@ components: {
             /**
             check if user scroll to end of page
             */
-
             if(this.$refs.showsDiv && window.innerHeight +1 > this.$refs.showsDiv.getBoundingClientRect().bottom) this.loadMoreShows();
-          },
+          }
     },
     mounted () {
-        this.loadMoreShows()
+        this.loadMoreShows()  // init the page with loading first set of items
     },
     created:function() {
-        window.addEventListener('scroll', this.handleScroll);
+        window.addEventListener('scroll', this.handleScroll);  // create an event for scrolling when component created
     },
     destroyed() {
-        window.removeEventListener('scroll', this.handleScroll);
+        window.removeEventListener('scroll', this.handleScroll);   // remove the event of scrolling after leave the page
     },
-    watch: {
-        showedAmount: function (va) {
-            this.showsList = []
-            this.loadMoreShows()
+    computed: {
+        noResults(){
+            return  (
+                          (this.showsList.length === 0 && !this.isSearching)
+                       || (this.searchResult.length === 0 && this.isSearching)
+                    )
+                    && !this.isLoading
         }
     }
 }

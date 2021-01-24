@@ -1,10 +1,5 @@
 <template>
-    <div v-if="noResults">
-        <div class="text-center">
-            There are no results.
-        </div>
-    </div>
-    <div class="panel" v-else-if="islistview">
+    <div class="panel" v-if="islistview">
             <table class="table">
 
             <thead>
@@ -29,12 +24,7 @@
 
 <script>
 export default {
-    props: ["islistview", "showslist"],
-    computed: {
-        noResults(){
-            return this.showslist.length === 0
-        }
-    }
+    props: ["islistview", "showslist"]
 }
 </script>
 

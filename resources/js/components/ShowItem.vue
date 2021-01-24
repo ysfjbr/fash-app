@@ -18,14 +18,16 @@
      </td>
 
      <td>
-        {{ showdata.genres[0] }}
+         <ul>
+             <li v-for="genre in showdata.genres" :key="genre">{{ genre }}</li>
+         </ul>
      </td>
 
      <td class="d-none d-lg-block">
         {{ showdata.language }}
      </td>
 </tr>
-<div class="col-lg-4" v-else>
+<div class="col-md-4" v-else>
 
         <router-link class="nav-link" :to="`/show/${ showdata.id }`">
         <div class="card card-custom bg-white border-white border-0">
@@ -51,14 +53,12 @@ export default {
     props: ['showdata', 'islistview'],
 
     methods:{
-        /**
-         * return a part of summry maximum of 200 letter
-         */
+
         summary(string){
             if(string){
                 string = string.replace(/(<([^>]+)>)/gi, ""); // remove Tags
-                if(string.length > SummeryMaxLength) return string.slice(0, SummeryMaxLength-3) + '...'
-                return string
+                if(string.length > SummeryMaxLength) return string.slice(0, SummeryMaxLength-3) + '...'  //return a part of summry if it more than 200 letter
+                return string  // return whole summry if it less than 200 letter
             }
         }
     }

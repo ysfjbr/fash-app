@@ -49,10 +49,10 @@ class ShowsController extends Controller
                 $cacheKey = 'SHOW.PAGE.'.$i;
 
                 // get the Data from cache if available
-                array_push($PagesData, cache()->remember($cacheKey, Carbon::now()->addHour(24), function() use($page) {
+                array_push($PagesData, cache()->remember($cacheKey, Carbon::now()->addHour(24), function() use($i) {
 
                     // if not in the cache get from 3rd party and store it in cache for one hour (for optimizing API calling)
-                    return self::getDataFromTVMaze('shows',['page'=> $page]);
+                    return self::getDataFromTVMaze('shows',['page'=> $i]);
                 }));
             }
 
@@ -61,7 +61,6 @@ class ShowsController extends Controller
 
             // return a set of items according to page number
             return array_slice($allData, $page * $shows_per_page, $shows_per_page);
-
         }
         if($search != ""){
             // Search input tirm and to upper case
@@ -84,7 +83,7 @@ class ShowsController extends Controller
         }
     }
 
-    public static function getDataFromTVMaze($api_url,$params=[])
+    public static function getDataFromTVMaze($api_url,$params=[], $isReturnArray = true)
     {
         // Increment the count of the request Jobs
         Cache::increment('REQAPICOUNT');
@@ -95,6 +94,7 @@ class ShowsController extends Controller
         // wait according to count of jobs  (if one job sleep 0.5 sec, 2 jobs sleep 1 sec ...)
 
         usleep($ReqQueue * 500000);
+
 
         // for testing only!
         if($api_url == "FAKE") {
@@ -119,14 +119,17 @@ class ShowsController extends Controller
 
         // After Requesting jobs will be decreased by 1
         Cache::decrement('REQAPICOUNT');
-        return json_decode ((string)$response->getBody ());
+
+        if($isReturnArray) return json_decode((string)$response->getBody());
+
+        return response()->json(json_decode((string)$response->getBody()));
+
     }
 
     //To be executed by tinker
     public static function getApiRequestCache()
     {
-        //return (Cache::has('APIREQUESTS')) ?
-        return Cache::get('APIREQUESTS');// : [];
+        return (Cache::has('APIREQUESTS')) ? Cache::get('APIREQUESTS') : [];
     }
 
 
@@ -159,7 +162,12 @@ class ShowsController extends Controller
      */
     public function show($id)
     {
-        //
+        $cacheKey = 'SHOW.SHOW.'.$id;
+        //return $cacheKey;
+
+        return cache()->remember($cacheKey, Carbon::now()->addMinute(5), function() use($id) {
+            return self::getDataFromTVMaze('shows/'.$id, [] , false);
+        });
     }
 
     /**

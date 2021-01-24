@@ -39,7 +39,7 @@ const router = new VueRouter({
             component: Home
         },
         {
-            path: '/show',
+            path: '/show/:showid',
             name: 'show',
             component: Show,
             meta:{
