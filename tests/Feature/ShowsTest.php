@@ -11,7 +11,7 @@ use Tests\TestCase;
 class ShowsTest extends TestCase
 {
     /**
-     * A basic feature test example.
+     * Check if end-point /api/shows is working.
      *
      * @return void
      */
@@ -64,6 +64,9 @@ class ShowsTest extends TestCase
         $this->assertLessThan( $DiffTime , $MinTime , 'There are no delay between Requests!' );
     }
 
+    /**
+     * Print the list of request from TVMaze in last 24 Hour
+     */
     public function test_GetRequestsListFromCache()
     {
         print_r(ShowsController::getApiRequestCache());
