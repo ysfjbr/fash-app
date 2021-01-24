@@ -21,7 +21,7 @@ Vue.component('show-items', require('./components/ShowsItems.vue').default);   /
 Vue.component('show-item', require('./components/ShowItem.vue').default);   // One TV-Show Item
 
 /**
- * Pages to routes
+ * Pages for Routers
  */
 import Home from './Pages/HomePage.vue'
 import Show from './Pages/ShowPage.vue'
@@ -41,10 +41,7 @@ const router = new VueRouter({
         {
             path: '/show/:showid',
             name: 'show',
-            component: Show,
-            meta:{
-                title:"- Login"
-            }
+            component: Show
         }
     ]
 });
