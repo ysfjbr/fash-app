@@ -25,6 +25,26 @@ class ShowsTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_ShowsGetOneItemApiIsOnline()
+    {
+        /**
+         * check if Get Api is working and return code 200
+         */
+        $response = $this->get('/api/shows/1');
+
+        $response->assertStatus(200);
+    }
+
+    public function test_OtherApiIsOffline()
+    {
+        /**
+         * check if Get Api is not found and return code 404
+         */
+        $response = $this->get('/api/other');
+
+        $response->assertStatus(404);
+    }
+
     public function test_ApiDelayRequesting()
     {
         /**
@@ -42,6 +62,12 @@ class ShowsTest extends TestCase
 
         $DiffTime = microtime( true ) - $StartTime;
         $this->assertLessThan( $DiffTime , $MinTime , 'There are no delay between Requests!' );
+    }
+
+    public function test_GetRequestsListFromCache()
+    {
+        print_r(ShowsController::getApiRequestCache());
+        $this->assertTrue(true);
     }
 
 }

@@ -46,7 +46,7 @@ class ShowsController extends Controller
             $PagesData = [];
             for($i = 0 ; $i <= $TVMazePageNumber ; $i++){
 
-                $cacheKey = 'SHOW.PAGE.'.$i;
+                $cacheKey = self::getCacheKey('page',$i);
 
                 // get the Data from cache if available
                 array_push($PagesData, cache()->remember($cacheKey, Carbon::now()->addHour(24), function() use($i) {
@@ -63,24 +63,27 @@ class ShowsController extends Controller
             return array_slice($allData, $page * $shows_per_page, $shows_per_page);
         }
         if($search != ""){
-            // Search input tirm and to upper case
-            $search = strtoupper(trim($search));
 
-            //Multiple spaces to one space
-            $search = preg_replace('/\s+/', ' ', $search);
-
-            // Replace Spaces with (+)
-            $search = str_replace(" ","+", $search);
-
-            // for example " The   World " => "THE+WORLD"
-            $cacheKey = 'SHOW.SEARCH.'.$search;
-
-            //return $cacheKey;
-
+            $cacheKey = self::getCacheKey('search',$search);
             return cache()->remember($cacheKey, Carbon::now()->addHour(24), function() use($search) {
                 return self::getDataFromTVMaze('search/shows',['q'=> $search]);
             });
         }
+    }
+
+    public static function getCacheKey($type, $key){
+        // Key and Type input tirm and to upper case
+        $key = strtoupper(trim($key));
+        $type = strtoupper(trim($type));
+
+        //Multiple spaces to one space
+        $key = preg_replace('/\s+/', ' ', $key);
+
+        // Replace Spaces with (+)
+        $key = str_replace(" ","+", $key);
+
+        // for example " The   World " => "THE+WORLD"
+        return 'SHOW.'.$type.'.'.$key;
     }
 
     public static function getDataFromTVMaze($api_url,$params=[], $isReturnArray = true)
@@ -109,9 +112,12 @@ class ShowsController extends Controller
         $url = 'http://api.tvmaze.com/';
         $api_url = $url . $api_url ;
 
-        // Register this request for monitoring
+        // Register this request for monitoring (URl & Time)
         $ReqsInCache =  (Cache::has('APIREQUESTS')) ? Cache::get('APIREQUESTS') : [];
-        array_push($ReqsInCache, ['url'=> $api_url, 'params'=>$params, 'time'=>Carbon::now()]);
+
+        $mt = microtime(true);
+        $millsec = round( $mt * 1000 ) - (floor($mt) * 1000) ;
+        array_push($ReqsInCache, 'URL : '. $api_url.' | Params: '.implode(',',$params).' | Time : '.now()." > ".$millsec); //
         Cache::put('APIREQUESTS', $ReqsInCache, Carbon::now()->addDay(1));
 
         // Start Requesting
@@ -126,7 +132,7 @@ class ShowsController extends Controller
 
     }
 
-    //To be executed by tinker
+    //Get array of Last requests to 3rd party in last 24 hours
     public static function getApiRequestCache()
     {
         return (Cache::has('APIREQUESTS')) ? Cache::get('APIREQUESTS') : [];
@@ -155,7 +161,7 @@ class ShowsController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Return the specified Show by its ID.
      *
      * @param  int  $id
      * @return \Illuminate\Http\Response
