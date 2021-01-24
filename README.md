@@ -25,17 +25,17 @@ TVShows is a web application developed using Laravel and Vue to explore Shows fr
 > php -r "file_exists('.env') || copy('.env.example', '.env');"
 - Generate Laravel key
 > php artisan key:generate
-- If necessary, grant the application some permissions (on Linux)
-> sudo chown -R www-data:www-data /var/www/fash-app/
-
-> sudo chmod -R 755 /var/www/fash-app/
+- To install NPM dependencies
+> npm install
+- Finally, to run it locally: 
+> php artisan serve
 
 - That's it!
 
 <hr>
 
 ## Online Preview
-To preview this application live, please click [Here](http://85.214.148.222:8081/)
+To preview this application (Live), please click [Here](http://85.214.148.222:8081/)
 
 <hr>
 
