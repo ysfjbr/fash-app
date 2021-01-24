@@ -3,7 +3,7 @@
 
 ## About TVShows 
 
-TVShows is a web application developed using Laravel and Vue to explore Shows from TVMaze.com.
+TVShows is a web application developed using Laravel and Vue to explore Shows from [TVMaze.com](https://www.TVMaze.com). 
 
 <hr>
 
@@ -22,9 +22,9 @@ TVShows is a web application developed using Laravel and Vue to explore Shows fr
 - Install required dependencies:
 > composer install
 - Create environment file:
-> sudo php -r "file_exists('.env') || copy('.env.example', '.env');"
+> php -r "file_exists('.env') || copy('.env.example', '.env');"
 - Generate Laravel key
-> sudo php artisan key:generate
+> php artisan key:generate
 - If necessary, grant the application some permissions (on Linux)
 > sudo chown -R www-data:www-data /var/www/fash-app/
 
@@ -32,9 +32,18 @@ TVShows is a web application developed using Laravel and Vue to explore Shows fr
 
 - That's it!
 
+<hr>
+
+## Online Preview
+To preview this application live, please click [Here](http://85.214.148.222:8081/)
+
+<hr>
+
 ## Contact ME
 
 Thank you for your interest. If you have any questions do not hesitate to contact me via [ysf_jbr@msn.com](mailto:ysf_jbr@msn.com).
+
+<hr>
 
 ## License
 
