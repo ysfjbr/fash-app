@@ -1,8 +1,23 @@
-https://laravel.com/docs/8.x/installation
-composer create-project laravel/laravel fash-app
+Install Instructions
+Clone the project to your server:
+git clone https://github.com/ysfjbr/fash-app.git
 
-https://laravel.com/docs/7.x/frontend
-composer require laravel/ui
-php artisan ui vue
+Go in application folder
+cd fash-app
 
-npm install, run dev
+Install required dependencies:
+composer install
+
+Create environment file:
+php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+Generate Laravel key
+php artisan key:generate
+
+To install NPM dependencies
+npm install
+
+Finally, to run it locally:
+php artisan serve
+
+That's it!
